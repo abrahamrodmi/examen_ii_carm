@@ -16,22 +16,20 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        // Aiven y Render suelen proporcionar una URL completa (DATABASE_URL)
-        const databaseUrl = configService.get<string>('DATABASE_URL');
-
         return {
           type: 'postgres',
-          url: databaseUrl,
+          url: configService.get<string>('DATABASE_URL'),
           autoLoadEntities: true,
-          synchronize: true,
-          ssl: {
-            rejectUnauthorized: false,
+          synchronize: true, // Ideal para tu avance del 4to semestre
+          // Cambiamos la estructura de SSL para asegurar que el driver lo reconozca
+          extra: {
+            ssl: {
+              rejectUnauthorized: false,
+            },
           },
         };
       },
     }),
-    AuthModule,
-    CursoModule,
   ],
 })
 export class AppModule { }
