@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { CursoModule } from './curso/curso.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { EstudianteModule } from './estudiante/estudiante.module';
+import { ProfesorModule } from './profesor/profesor.module';
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 @Module({
   imports: [
@@ -30,6 +32,12 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
         };
       },
     }),
+    AuthModule,
+    CursoModule,
+    EstudianteModule,
+    ProfesorModule,
   ],
+  controllers: [],
+  providers: [],
 })
 export class AppModule { }
