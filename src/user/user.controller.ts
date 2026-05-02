@@ -1,34 +1,55 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Roles } from 'src/auth/roles.decorator';
+import { RolesGuard } from 'src/auth/roles.guard';
+import { AuthGuard } from 'src/auth/auth.guard';
 
-@Controller('user')
-export class UserController {
-  constructor(private readonly userService: UserService) {}
+import { Role } from '../enums/roles.enum';
+
+@ApiTags('users') // Agrupa el endpoint en la sección de usuarios
+@ApiBearerAuth()  // Indica que requiere el token JWT para probarlo
+@Controller('users')
+@UseGuards(AuthGuard, RolesGuard)
+export class UsersController {
+
+  constructor(private readonly userService: UserService) { }
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
+  @Roles(Role.DEVELOPER)
+  createUser(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
-  }
-
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @Roles(Role.DEVELOPER)
+  updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Roles(Role.ADMIN)
+  deleteUser(@Param('id') id: string) {
     return this.userService.remove(+id);
   }
+
+  @Patch(':id/make-admin')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Convertir un usuario en administrador' })
+  @ApiParam({ name: 'id', description: 'ID único del usuario (UUID)', example: '123e4567-e89b-12d3-a456-426614174000' })
+  @ApiResponse({ status: 200, description: 'El usuario ahora es administrador.' })
+  @ApiResponse({ status: 403, description: 'Prohibido: No tienes permisos de ADMIN.' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
+  async makeAdmin(@Param('id') id: number) {
+    return await this.userService.makeAdmin(id);
+  }
+
+  @Get()
+  @Roles(Role.ADMIN, Role.DEVELOPER)
+  findAll() {
+    return this.userService.findAll();
+  }
 }
+

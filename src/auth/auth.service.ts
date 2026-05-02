@@ -7,76 +7,112 @@ import { User } from '../user/entities/user.entity';
 import { LoginUserDto } from '../user/dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ResponseUserDto } from '../user/dto/response-user.dto';
+import { Role } from '../enums/roles.enum';
+import { OnModuleInit } from '@nestjs/common';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements OnModuleInit {
     constructor(
         @InjectRepository(User) private userRepository: Repository<User>,
-        private jwtService: JwtService) {
+        private jwtService: JwtService,
+    ) { }
+
+    // 🔥 Crear ADMIN inicial
+    async onModuleInit() {
+        const adminExists = await this.userRepository.findOneBy({
+            username: 'admin',
+        });
+
+        if (!adminExists) {
+            const hashedPassword = await bcrypt.hash('admin123', 10);
+
+            await this.userRepository.save({
+                username: 'admin',
+                nombre: 'Administrador',
+                password: hashedPassword,
+                rol: Role.ADMIN,
+            });
+        }
     }
 
+    // 🔹 Crear usuario
     async create(createUserDto: CreateUserDto) {
-        const numRound = 10;
-        const { username, password } = createUserDto;
+        const { username, password, nombre } = createUserDto;
+
         const userExist = await this.userRepository.findOneBy({ username });
+
         if (userExist) {
-            const error = {
-                "statusCode": 400,
-                "error": "conflict",
-                "message": ["El email ya existe"]
-            }
-            //Si se cumple  el usuario existe en la DB
-            throw new ConflictException(error);
+            throw new ConflictException({
+                statusCode: 400,
+                error: 'Conflict',
+                message: ['El username ya existe'],
+            });
         }
-        //encriptar  el password
-        const hashPassword = await bcrypt.hash(password, numRound);
-        createUserDto.password = hashPassword;
-        //guardar
-        const savedUser = await this.userRepository.save(createUserDto);
-        return { userId: savedUser.userId, nombre: savedUser.nombre, username: savedUser.username, rol: savedUser.rol } as ResponseUserDto;
+
+        const hashPassword = await bcrypt.hash(password, 10);
+
+        const newUser = this.userRepository.create({
+            username,
+            nombre,
+            password: hashPassword,
+            rol: Role.USER,
+        });
+
+        const savedUser = await this.userRepository.save(newUser);
+
+        return {
+            userId: savedUser.userId,
+            nombre: savedUser.nombre,
+            username: savedUser.username,
+            rol: savedUser.rol,
+        } as ResponseUserDto;
     }
 
-    async login(LoginUserDto: LoginUserDto) {
-        //Desestructurar
-        const { username, password } = LoginUserDto;
-        //Verificar que el email existe
+    // 🔹 Login
+    async login(loginUserDto: LoginUserDto) {
+        const { username, password } = loginUserDto;
+
         const userExist = await this.userRepository.findOneBy({ username });
+
         if (!userExist) {
-            const error = {
-                "statusCode": 401,
-                "error": "Not Found",
-                "message": ["El usuario no existe"]
-            }
-            throw new NotFoundException(error)
+            throw new UnauthorizedException({
+                statusCode: 401,
+                error: 'Unauthorized',
+                message: ['Credenciales inválidas'],
+            });
         }
-        //Comparar que pw sean iguales
+
         const matchPassword = await bcrypt.compare(password, userExist.password);
+
         if (!matchPassword) {
-            const error = {
-                "statusCode": 404,
-                "error": "Unauthorized exception",
-                "message": ["Password incorrecto"]
-            }
-            throw new UnauthorizedException(error);
-            //Si son iguales retornar jwt
+            throw new UnauthorizedException({
+                statusCode: 401,
+                error: 'Unauthorized',
+                message: ['Credenciales inválidas'],
+            });
         }
+
         const payload = {
             sub: userExist.userId,
             name: userExist.nombre,
             username: userExist.username,
-            rol: userExist.rol
-        }
+            rol: userExist.rol,
+        };
 
-        const token = await this.jwtService.signAsync(payload)
         return {
-            token,
-
+            token: await this.jwtService.signAsync(payload),
         };
     }
 
+    // 🔹 Listar usuarios
     async findAll(): Promise<ResponseUserDto[]> {
         const users = await this.userRepository.find();
-        return users.map(user => ({ userId: user.userId, nombre: user.nombre, username: user.username, rol: user.rol } as ResponseUserDto));
-    }
 
+        return users.map(user => ({
+            userId: user.userId,
+            nombre: user.nombre,
+            username: user.username,
+            rol: user.rol,
+        } as ResponseUserDto));
+    }
 }

@@ -2,10 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { AuthService } from './auth/auth.service';
 
 async function bootstrap() {
   console.log('=== DATABASE_URL:', process.env.DATABASE_URL);
   const app = await NestFactory.create(AppModule);
+  const authService = app.get(AuthService);
+  await authService.onModuleInit();
   const config = new DocumentBuilder()
     .setTitle('Examen II')
     .setDescription('API de cursos')
