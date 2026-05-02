@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { CursoModule } from './curso/curso.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 @Module({
   imports: [
     // 1. Corregido: envFilePath debe apuntar al nombre del archivo físico (.env)
