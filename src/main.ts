@@ -13,11 +13,11 @@ async function bootstrap() {
     .addTag('Cursos')
     .addBearerAuth()
     .addServer('http://localhost:3000', 'servidor local')
-    .addServer('https://curso-api.onrender.com', 'servidor en nube')
+    .addServer('https://examen-ii-carm.onrender.com', 'servidor en nube')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
-  app.enableCors({ origin: ['https://curso-api.onrender.com', 'http://localhost:3000'], })
+  app.enableCors({ origin: ['https://examen-ii-carm.onrender.com', 'http://localhost:3000'], })
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     forbidNonWhitelisted: true,
