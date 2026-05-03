@@ -1,14 +1,18 @@
-import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { LoginUserDto } from '../user/dto/login-user.dto';
 import { AuthGuard } from './auth.guard';
-import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiNotFoundResponse, ApiResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiNotFoundResponse, ApiOperation, ApiResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { User } from '../user/entities/user.entity';
+import { Roles } from './roles.decorator';
+import { Role } from 'src/enums/roles.enum';
+import { UserService } from 'src/user/user.service';
+import { RolesGuard } from './roles.guard';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService) { }
+    constructor(private readonly authService: AuthService, private readonly userService: UserService) { }
 
     @ApiBody({ type: CreateUserDto })
     @ApiCreatedResponse({ type: User, description: "Usuario creado exitosamente" })
@@ -28,17 +32,17 @@ export class AuthController {
     }
 
     @ApiBearerAuth()
-    //ruta o endpoint protegido mediante un guard
-    //sin el token no se puede acceder a esta ruta
-    @UseGuards(AuthGuard)
-    @ApiResponse({ status: 200, description: 'Usuario logueado exitosamente' })
-    @ApiResponse({ status: 401, description: 'El usuario no existe' })
-    @ApiResponse({ status: 404, description: 'Password incorrecto' })
-    @ApiResponse({ status: 409, description: 'Correo duplicado en base de datos' })
-    @Get('/profile')
-    profile(@Request() req) {
-        // req.user contiene el payload del token que fue inyectado por el AuthGuard
-        return "estas viendo perfiles protegidos por un token valido y verificado" + req.user;
+    @UseGuards(AuthGuard, RolesGuard)
+    @Get('profile')
+    @Roles(Role.ADMIN, Role.DEVELOPER, Role.USER)
+    @ApiOperation({ summary: 'Obtener los datos del usuario actual (Token)' })
+    @ApiResponse({ status: 200, description: 'Perfil recuperado con éxito', type: User })
+    @ApiResponse({ status: 401, description: 'Token inválido o no proporcionado' })
+    @ApiResponse({ status: 403, description: 'No tienes permisos para ver este perfil' })
+    findMyProfile(@Request() req) {
+        // En NestJS, el ID suele venir en req.user tras pasar el AuthGuard
+        const id = req.user.userId;
+        return this.userService.findOne(id);
     }
 
 }
