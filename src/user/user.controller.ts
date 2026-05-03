@@ -27,7 +27,7 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @Roles(Role.DEVELOPER)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Actualizar usuario' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
