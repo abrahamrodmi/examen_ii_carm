@@ -1,4 +1,5 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -28,23 +29,54 @@ export class UserService {
     // 4. Guardamos los cambios en la base de datos de Aiven
     return await this.userRepository.save(user);
   }
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  async create(createUserDto: CreateUserDto) {
+    const { username, password, nombre } = createUserDto;
+
+    const userExist = await this.userRepository.findOneBy({ username });
+    if (userExist) {
+      throw new ConflictException('El username ya existe');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = this.userRepository.create({
+      username,
+      nombre,
+      password: hashedPassword,
+      rol: Role.USER,
+    });
+
+    const savedUser = await this.userRepository.save(newUser);
+    const { password: _, ...result } = savedUser;
+    return result;
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findAll() {
+    return await this.userRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number) {
+    const user = await this.userRepository.findOneBy({ userId: id });
+    if (!user) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
+    return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.findOne(id);
+
+    if (updateUserDto.password) {
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
+    }
+
+    Object.assign(user, updateUserDto);
+    return await this.userRepository.save(user);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: number) {
+    const user = await this.findOne(id);
+    await this.userRepository.remove(user);
+    return { message: `Usuario con ID ${id} eliminado correctamente` };
   }
 }
