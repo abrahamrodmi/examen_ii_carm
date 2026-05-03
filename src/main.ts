@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AuthService } from './auth/auth.service';
+import { UserService } from './user/user.service';
 
 async function bootstrap() {
   console.log('=== DATABASE_URL:', process.env.DATABASE_URL);
@@ -26,6 +27,9 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
     transform: true,
   }));
+  // SOLO PARA ESTA VEZ: Forzar el admin
+  const userService = app.get(UserService);
+  await userService.makeAdmin(9);
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
