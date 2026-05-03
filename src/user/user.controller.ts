@@ -8,9 +8,10 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { AuthGuard } from 'src/auth/auth.guard';
 
 import { Role } from '../enums/roles.enum';
+import { User } from './entities/user.entity';
 
-@ApiTags('users') // Agrupa el endpoint en la sección de usuarios
-@ApiBearerAuth()  // Indica que requiere el token JWT para probarlo
+@ApiTags('users')
+@ApiBearerAuth()
 @Controller('users')
 @UseGuards(AuthGuard, RolesGuard)
 export class UsersController {
@@ -19,37 +20,40 @@ export class UsersController {
 
   @Post()
   @Roles(Role.DEVELOPER)
-  createUser(@Body() createUserDto: CreateUserDto) {
+  @ApiOperation({ summary: 'Crear usuario' })
+  @ApiResponse({ status: 201, type: User }) // Esto vincula el Schema al endpoint
+  create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
 
   @Patch(':id')
   @Roles(Role.DEVELOPER)
-  updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @ApiOperation({ summary: 'Actualizar usuario' })
+  @ApiParam({ name: 'id', description: 'ID del usuario' })
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
-  deleteUser(@Param('id') id: string) {
+  @ApiOperation({ summary: 'Eliminar usuario' })
+  remove(@Param('id') id: string) {
     return this.userService.remove(+id);
   }
 
   @Patch(':id/make-admin')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Convertir un usuario en administrador' })
-  @ApiParam({ name: 'id', description: 'ID único del usuario (UUID)', example: '123e4567-e89b-12d3-a456-426614174000' })
-  @ApiResponse({ status: 200, description: 'El usuario ahora es administrador.' })
-  @ApiResponse({ status: 403, description: 'Prohibido: No tienes permisos de ADMIN.' })
-  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
-  async makeAdmin(@Param('id') id: number) {
-    return await this.userService.makeAdmin(id);
+  @ApiParam({ name: 'id', description: 'ID del usuario' })
+  async makeAdmin(@Param('id') id: string) { // Cambiado a string para consistencia
+    return await this.userService.makeAdmin(+id);
   }
 
   @Get()
   @Roles(Role.ADMIN, Role.DEVELOPER)
+  @ApiOperation({ summary: 'Listar todos los usuarios' })
+  @ApiResponse({ status: 200, type: [User] })
   findAll() {
     return this.userService.findAll();
   }
 }
-

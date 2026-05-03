@@ -5,6 +5,7 @@ import { CursoModule } from './curso/curso.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EstudianteModule } from './estudiante/estudiante.module';
 import { ProfesorModule } from './profesor/profesor.module';
+import { UserModule } from './user/user.module';
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 @Module({
   imports: [
@@ -36,6 +37,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     CursoModule,
     EstudianteModule,
     ProfesorModule,
+    UserModule,
   ],
   controllers: [],
   providers: [],
