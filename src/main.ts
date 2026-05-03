@@ -29,7 +29,7 @@ async function bootstrap() {
   }));
   // SOLO PARA ESTA VEZ: Forzar el admin
   const userService = app.get(UserService);
-  await userService.makeAdmin(9);
+  await userService.makeAdmin(11);
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
