@@ -16,7 +16,7 @@ export class AuthController {
 
     @ApiBody({ type: CreateUserDto })
     @ApiCreatedResponse({ type: User, description: "Usuario creado exitosamente" })
-    @ApiResponse({ status: 400, description: 'El email ya existe' })
+    @ApiResponse({ status: 400, description: 'El usuario ya existe' })
     @Post('/register')
     create(@Body() createUserDto: CreateUserDto) {
         return this.authService.create(createUserDto);
@@ -40,7 +40,6 @@ export class AuthController {
     @ApiResponse({ status: 401, description: 'Token inválido o no proporcionado' })
     @ApiResponse({ status: 403, description: 'No tienes permisos para ver este perfil' })
     findMyProfile(@Request() req) {
-        // En NestJS, el ID suele venir en req.user tras pasar el AuthGuard
         const id = req.user.userId;
         return this.userService.findOne(id);
     }

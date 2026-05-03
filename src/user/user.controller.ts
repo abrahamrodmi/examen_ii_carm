@@ -6,7 +6,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from 'src/auth/roles.decorator';
 import { RolesGuard } from 'src/auth/roles.guard';
 import { AuthGuard } from 'src/auth/auth.guard';
-
 import { Role } from '../enums/roles.enum';
 import { User } from './entities/user.entity';
 
@@ -21,7 +20,7 @@ export class UsersController {
   @Post()
   @Roles(Role.DEVELOPER)
   @ApiOperation({ summary: 'Crear usuario' })
-  @ApiResponse({ status: 201, type: User }) // Esto vincula el Schema al endpoint
+  @ApiResponse({ status: 201, type: User }) 
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
   }
@@ -45,7 +44,7 @@ export class UsersController {
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Convertir un usuario en administrador' })
   @ApiParam({ name: 'id', description: 'ID del usuario' })
-  async makeAdmin(@Param('id') id: string) { // Cambiado a string para consistencia
+  async makeAdmin(@Param('id') id: string) { 
     return await this.userService.makeAdmin(+id);
   }
 

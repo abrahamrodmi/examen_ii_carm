@@ -12,7 +12,6 @@ export class EstudianteService {
     private readonly estudianteRepository: Repository<Estudiante>,
   ) { }
   async create(createEstudianteDto: CreateEstudianteDto, userId: number) {
-    // Crear instancia y agregar el userId
     const nuevoEstudiante = this.estudianteRepository.create({
       userId: userId,
       nombre: createEstudianteDto.nombre,
@@ -21,7 +20,6 @@ export class EstudianteService {
       direccion: createEstudianteDto.direccion,
     });
 
-    // guardar en la base de datos
     return await this.estudianteRepository.save(nuevoEstudiante);
   }
 

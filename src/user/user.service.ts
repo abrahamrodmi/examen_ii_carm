@@ -15,18 +15,14 @@ export class UserService {
   ) { }
 
   async makeAdmin(id: number) {
-    // 1. Buscamos al usuario por ID
     const user = await this.userRepository.findOneBy({ userId: id });
 
-    // 2. Si no existe, lanzamos una excepción de NestJS
     if (!user) {
       throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
     }
 
-    // 3. Actualizamos el rol (Asegúrate de que 'role' sea el nombre exacto en tu entidad)
     user.rol = Role.ADMIN;
 
-    // 4. Guardamos los cambios en la base de datos de Aiven
     return await this.userRepository.save(user);
   }
   async create(createUserDto: CreateUserDto) {

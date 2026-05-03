@@ -27,7 +27,8 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
     transform: true,
   }));
-  // SOLO PARA ESTA VEZ: Forzar el admin
+  
+  // Forzar el admin
   const userService = app.get(UserService);
   await userService.makeAdmin(11);
   await app.listen(process.env.PORT ?? 3000);

@@ -12,7 +12,6 @@ export class ProfesorService {
     private readonly profesorRepository: Repository<Profesor>,
   ) { }
   async create(createProfesorDto: CreateProfesorDto, userId: number) {
-    // Crear instancia y agregar el userId
     const nuevoProfesor = this.profesorRepository.create({
       userId: userId,
       correo: createProfesorDto.correo,
@@ -20,7 +19,6 @@ export class ProfesorService {
       especialidad: createProfesorDto.especialidad,
     });
 
-    // guardar en la base de datos
     return await this.profesorRepository.save(nuevoProfesor);
   }
 
@@ -38,7 +36,6 @@ export class ProfesorService {
 
   async update(id: number, updateProfesorDto: UpdateProfesorDto) {
     const profesor = await this.findOne(id);
-    // Convertir codigoHabitacion a número 
     if (updateProfesorDto.correo) {
       updateProfesorDto.correo = new Date(updateProfesorDto.correo) as any;
     }

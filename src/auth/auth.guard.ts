@@ -10,6 +10,7 @@ import { Request } from 'express';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+
     constructor(private jwtService: JwtService) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -23,8 +24,6 @@ export class AuthGuard implements CanActivate {
             const payload = await this.jwtService.verifyAsync(token, {
                 secret: jwtConstants.secret,
             });
-
-            //se inyecta el payload en el objeto request para poder acceder a el en los controladores
             request['user'] = payload;
         } catch {
             throw new UnauthorizedException('Token invalido');

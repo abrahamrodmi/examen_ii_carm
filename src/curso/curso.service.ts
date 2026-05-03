@@ -21,7 +21,6 @@ export class CursoService {
       especialidad: createCursoDto.especialidad,
     });
 
-    // guardar en la base de datos
     return await this.cursoRepository.save(nuevoCurso);
   }
 
@@ -39,7 +38,6 @@ export class CursoService {
 
   async update(id: number, updateCursoDto: UpdateCursoDto) {
     const curso = await this.findOne(id);
-    // Convertir codigoHabitacion a número 
     if (updateCursoDto.inicio) {
       updateCursoDto.inicio = new Date(updateCursoDto.inicio) as any;
     }

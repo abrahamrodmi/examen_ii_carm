@@ -12,20 +12,19 @@ import { OnModuleInit } from '@nestjs/common';
 
 @Injectable()
 export class AuthService implements OnModuleInit {
+
     constructor(
         @InjectRepository(User) private userRepository: Repository<User>,
         private jwtService: JwtService,
     ) { }
 
-    // 🔥 Crear ADMIN inicial
+    //Crear ADMIN inicial por si no se desea manual
     async onModuleInit() {
         const adminExists = await this.userRepository.findOneBy({
             username: 'admin',
         });
-
         if (!adminExists) {
             const hashedPassword = await bcrypt.hash('admin123', 10);
-
             await this.userRepository.save({
                 username: 'admin',
                 nombre: 'Administrador',
@@ -35,7 +34,7 @@ export class AuthService implements OnModuleInit {
         }
     }
 
-    // 🔹 Crear usuario
+    // Crear usuario
     async create(createUserDto: CreateUserDto) {
         const { username, password, nombre } = createUserDto;
 
@@ -68,7 +67,7 @@ export class AuthService implements OnModuleInit {
         } as ResponseUserDto;
     }
 
-    // 🔹 Login
+    // Login
     async login(loginUserDto: LoginUserDto) {
         const { username, password } = loginUserDto;
 
@@ -104,7 +103,7 @@ export class AuthService implements OnModuleInit {
         };
     }
 
-    // 🔹 Listar usuarios
+    // Listar usuarios
     async findAll(): Promise<ResponseUserDto[]> {
         const users = await this.userRepository.find();
 
